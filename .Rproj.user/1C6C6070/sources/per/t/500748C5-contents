@@ -1,15 +1,25 @@
+#### TO DO ON LAPTOP
+# install.packages("Matrix", type = "source")
+# install.packages("lme4", type = "source")
+
 
 # M-current
 
+library(Matrix)
+library(lme4)
+library(lmerTest)
 library(tidyverse)
 library(ggpubr)
+library(car)
 
 source("functions/geom_boxjitter.R")
 
 rie <- read.csv("rawdata/rmp-impre-epsc-data.csv")
+rie$subslice <- paste(rie$subject, rie$slice, sep = "")
+rie <- rie %>% relocate(subslice)
 mcd <- read.csv("rawdata/mc-data.csv")
 
-rie.id <- rie %>% select(subject,slice,group)
+rie.id <- rie %>% select(subslice,group)
 
 tmcd <- as.data.frame(t(mcd))
 
@@ -22,9 +32,10 @@ tmcd2 <- tmcd1 %>%
   separate(ID, into = c("mc.tp", "subject"), sep = "_", remove = TRUE) %>%
   select(subject, everything()) %>%
   separate(mc.tp, into = c("drug", "tp"), sep = "\\.", remove = TRUE) %>%
-  select(subject, everything())
+  select(subject, everything()) %>% 
+  rename(subslice = subject)
 
-mcd3 <- left_join(rie.id,tmcd2, by="subject")
+mcd3 <- left_join(rie.id,tmcd2, by="subslice")
 
 mcd4 <- mcd3[!is.na(mcd3$drug),]
 
@@ -41,11 +52,11 @@ mc.pro <- mcd4 %>%
     ),
     group = group
   ) %>%
-  pivot_longer(cols = 6:16) %>%
+  pivot_longer(cols = 5:15) %>%
   # Remove NA values before calculations
   filter(!is.na(value)) %>%
   mutate(period = if_else(tp %in% c("Y1", "Y2"), "Y1Y2", "Y3Y4")) %>%
-  group_by(subject, group, drug_group, period, name) %>%
+  group_by(subslice, group, drug_group, period, name) %>%
   summarise(
     avg = mean(value, na.rm = TRUE),  # na.rm for additional protection
     .groups = "drop"
@@ -58,7 +69,7 @@ mc.pro <- mcd4 %>%
       Y1Y2 - Y3Y4
     )
   ) %>%
-  group_by(subject, group, drug_group, name) %>%
+  group_by(subslice, group, drug_group, name) %>%
   summarise(
     avg_diff = mean(diff, na.rm = TRUE),  # Will ignore NA diffs
     .groups = "drop"
@@ -75,17 +86,35 @@ mcpro.long$group <- as.factor(mcpro.long$group)
 
 
 mc.diff <- mc.pro %>%
-  select(subject, group, drug, 4:14) %>%  # Select relevant columns
+  select(subslice, group, drug, 4:14) %>%  # Select relevant columns
   pivot_longer(cols = -(1:3), names_to = "variable") %>%
   pivot_wider(names_from = drug, values_from = value) %>%
   mutate(MC = TTX - XE) %>%
-  select(subject, group, variable, MC) %>%
+  select(subslice, group, variable, MC) %>%
   pivot_wider(names_from = variable, values_from = MC)
 
 mc.diff.long <- mc.diff %>% 
   pivot_longer(col = c(3:13), names_to = "mV", values_to = "pA")
 mc.diff.long$mV <- as.numeric(mc.diff.long$mV)
 mc.diff.long$group <- as.factor(mc.diff.long$group)
+
+
+
+# First, identify which subslice values to exclude
+subslices_to_exclude <- rie %>%
+  filter(RMP.xe > -40) %>%
+  pull(subslice) %>%
+  unique()
+
+# Then filter both dataframes to exclude those subslices
+mcpro.long_filtered <- mcpro.long %>%
+  filter(!subslice %in% subslices_to_exclude)
+
+mc.diff.long_filtered <- mc.diff.long %>%
+  filter(!subslice %in% subslices_to_exclude)
+
+
+
 
 
 mcpro.long %>% 
@@ -99,6 +128,19 @@ mcpro.long %>%
 #save 800x450
 
 mcpro.long %>% 
+  filter(drug == "TTX") %>% 
+  ggline(., x = "mV", y = "pA", add = "mean_se", group="group", color="group", size=1, ylab = "pA (+/- SEM)")+
+  stat_compare_means(aes(group = group, label=..p.adj..), method="t.test", label = "p.signif", 
+                     symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), 
+                                        symbols = c( "***", "**", "*", "")),
+                     label.y= 40 , size=8) +
+  ggtitle("Outward Current (TTX)")
+#700x400
+
+
+
+
+mcpro.long %>% 
   filter(drug == "XE") %>% 
   ggplot(., aes(mV, pA, color = group)) +
   geom_point() +
@@ -109,7 +151,87 @@ mcpro.long %>%
 #save 800x450
 
 
+mcpro.long %>% 
+  filter(drug == "XE") %>% 
+  ggline(., x = "mV", y = "pA", add = "mean_se", group="group", color="group", size=1, ylab = "pA (+/- SEM)")+
+  stat_compare_means(aes(group = group, label=..p.adj..), method="t.test", label = "p.signif", 
+                     symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), 
+                                        symbols = c( "***", "**", "*", "")),
+                     label.y= 40 , size=8) +
+ggtitle("Outward Current (XE)")
+#700x400
+
+
 ggplot(mc.diff.long, aes(mV, pA, color = group)) +
+#  geom_point() +
+  geom_smooth(method = lm, formula = y ~ splines::bs(x, 3), se = T) +
+  theme_classic() +
+  ggtitle("M-Current (TTX-XE)") + 
+  geom_hline(yintercept=0)
+#save 800x450
+
+ggline(mc.diff.long, x = "mV", y = "pA", add = "mean_se", group="group", color="group", size=1, ylab = "pA (+/- SEM)")+
+  stat_compare_means(aes(group = group, label=..p.adj..), method="t.test", label = "p.signif", 
+                     symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), 
+                                        symbols = c( "***", "**", "*", "")),
+                     label.y= 30 , size=8) +
+  ggtitle("Outward Current (TTX-XE)")
+#700x400
+
+
+
+
+
+
+
+####FILTERED ANALYSES WHERE ONLY RMP REMAINED < -40mV AT END OF RECORDING
+
+mcpro.long_filtered %>% 
+  filter(drug == "TTX") %>% 
+  ggplot(., aes(mV, pA, color = group)) +
+  geom_point() +
+  geom_smooth(method = lm, formula = y ~ splines::bs(x, 3), se = T) +
+  theme_classic() +
+  ggtitle("Outward Current (TTX)")+ 
+  geom_hline(yintercept=0)
+#save 800x450
+
+mcpro.long_filtered %>% 
+  filter(drug == "TTX") %>% 
+  ggline(., x = "mV", y = "pA", add = "mean_se", group="group", color="group", size=1, ylab = "pA (+/- SEM)")+
+  stat_compare_means(aes(group = group, label=..p.adj..), method="t.test", label = "p.signif", 
+                     symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), 
+                                        symbols = c( "***", "**", "*", "")),
+                     label.y= 40 , size=8) +
+  ggtitle("Outward Current (TTX)")
+#700x400
+
+
+
+
+mcpro.long_filtered %>% 
+  filter(drug == "XE") %>% 
+  ggplot(., aes(mV, pA, color = group)) +
+  geom_point() +
+  geom_smooth(method = lm, formula = y ~ splines::bs(x, 3), se = T) +
+  theme_classic() +
+  ggtitle("Outward Current (XE)")+ 
+  geom_hline(yintercept=0)
+#save 800x450
+
+
+mcpro.long_filtered %>% 
+  filter(drug == "XE") %>% 
+  ggline(., x = "mV", y = "pA", add = "mean_se", group="group", color="group", size=1, ylab = "pA (+/- SEM)")+
+  stat_compare_means(aes(group = group, label=..p.adj..), method="t.test", label = "p.signif", 
+                     symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), 
+                                        symbols = c( "***", "**", "*", "")),
+                     label.y= 40 , size=8) +
+  ggtitle("Outward Current (XE)")
+#700x400
+
+
+ggplot(mc.diff.long_filtered, aes(mV, pA, color = group)) +
   geom_point() +
   geom_smooth(method = lm, formula = y ~ splines::bs(x, 3), se = T) +
   theme_classic() +
@@ -117,5 +239,28 @@ ggplot(mc.diff.long, aes(mV, pA, color = group)) +
   geom_hline(yintercept=0)
 #save 800x450
 
+ggline(mc.diff.long_filtered, x = "mV", y = "pA", add = "mean_se", group="group", color="group", size=1, ylab = "pA (+/- SEM)")+
+  stat_compare_means(aes(group = group, label=..p.adj..), method="t.test", label = "p.signif", 
+                     symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), 
+                                        symbols = c( "***", "**", "*", "")),
+                     label.y= 30 , size=8) +
+  ggtitle("Outward Current (TTX-XE)")
+#700x400
+
+
+### actual analysis 
+mc.diff.long_filtered2 <- mc.diff.long_filtered
+
+mc.diff.long_filtered2$mvsq <- mc.diff.long_filtered2$mV^2
+
+
+mc.dif.mm.int <- lmer(pA~group * (mV+mvsq) + (1 | subslice), data=mc.diff.long_filtered2, na.action=na.exclude)
+summary(mc.dif.mm.int)
+
+
+mc.dif.mm.main <- lmer(pA~group + mV + mvsq + (1 | subslice), data=mc.diff.long_filtered2, na.action=na.exclude)
+summary(mc.dif.mm.main)
+
+# it sure seems like there is no M-Current difference. 
 
 

@@ -1,6 +1,11 @@
+#### TO DO ON LAPTOP
+# install.packages("Matrix", type = "source")
+# install.packages("lme4", type = "source")
+
 
 # M-current
 
+library(Matrix)
 library(lme4)
 library(lmerTest)
 library(tidyverse)
@@ -124,7 +129,7 @@ mcpro.long %>%
 
 mcpro.long %>% 
   filter(drug == "TTX") %>% 
-  ggline(., x = "mV", y = "pA", add = "mean_se", group="group", color="group", size=1, ylab = "mV (+/- SEM)")+
+  ggline(., x = "mV", y = "pA", add = "mean_se", group="group", color="group", size=1, ylab = "pA (+/- SEM)")+
   stat_compare_means(aes(group = group, label=..p.adj..), method="t.test", label = "p.signif", 
                      symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), 
                                         symbols = c( "***", "**", "*", "")),
@@ -148,7 +153,7 @@ mcpro.long %>%
 
 mcpro.long %>% 
   filter(drug == "XE") %>% 
-  ggline(., x = "mV", y = "pA", add = "mean_se", group="group", color="group", size=1, ylab = "mV (+/- SEM)")+
+  ggline(., x = "mV", y = "pA", add = "mean_se", group="group", color="group", size=1, ylab = "pA (+/- SEM)")+
   stat_compare_means(aes(group = group, label=..p.adj..), method="t.test", label = "p.signif", 
                      symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), 
                                         symbols = c( "***", "**", "*", "")),
@@ -165,7 +170,7 @@ ggplot(mc.diff.long, aes(mV, pA, color = group)) +
   geom_hline(yintercept=0)
 #save 800x450
 
-ggline(mc.diff.long, x = "mV", y = "pA", add = "mean_se", group="group", color="group", size=1, ylab = "mV (+/- SEM)")+
+ggline(mc.diff.long, x = "mV", y = "pA", add = "mean_se", group="group", color="group", size=1, ylab = "pA (+/- SEM)")+
   stat_compare_means(aes(group = group, label=..p.adj..), method="t.test", label = "p.signif", 
                      symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), 
                                         symbols = c( "***", "**", "*", "")),
@@ -193,7 +198,7 @@ mcpro.long_filtered %>%
 
 mcpro.long_filtered %>% 
   filter(drug == "TTX") %>% 
-  ggline(., x = "mV", y = "pA", add = "mean_se", group="group", color="group", size=1, ylab = "mV (+/- SEM)")+
+  ggline(., x = "mV", y = "pA", add = "mean_se", group="group", color="group", size=1, ylab = "pA (+/- SEM)")+
   stat_compare_means(aes(group = group, label=..p.adj..), method="t.test", label = "p.signif", 
                      symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), 
                                         symbols = c( "***", "**", "*", "")),
@@ -217,7 +222,7 @@ mcpro.long_filtered %>%
 
 mcpro.long_filtered %>% 
   filter(drug == "XE") %>% 
-  ggline(., x = "mV", y = "pA", add = "mean_se", group="group", color="group", size=1, ylab = "mV (+/- SEM)")+
+  ggline(., x = "mV", y = "pA", add = "mean_se", group="group", color="group", size=1, ylab = "pA (+/- SEM)")+
   stat_compare_means(aes(group = group, label=..p.adj..), method="t.test", label = "p.signif", 
                      symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), 
                                         symbols = c( "***", "**", "*", "")),
@@ -234,7 +239,7 @@ ggplot(mc.diff.long_filtered, aes(mV, pA, color = group)) +
   geom_hline(yintercept=0)
 #save 800x450
 
-ggline(mc.diff.long_filtered, x = "mV", y = "pA", add = "mean_se", group="group", color="group", size=1, ylab = "mV (+/- SEM)")+
+ggline(mc.diff.long_filtered, x = "mV", y = "pA", add = "mean_se", group="group", color="group", size=1, ylab = "pA (+/- SEM)")+
   stat_compare_means(aes(group = group, label=..p.adj..), method="t.test", label = "p.signif", 
                      symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), 
                                         symbols = c( "***", "**", "*", "")),
@@ -244,3 +249,18 @@ ggline(mc.diff.long_filtered, x = "mV", y = "pA", add = "mean_se", group="group"
 
 
 ### actual analysis 
+mc.diff.long_filtered2 <- mc.diff.long_filtered
+
+mc.diff.long_filtered2$mvsq <- mc.diff.long_filtered2$mV^2
+
+
+mc.dif.mm.int <- lmer(pA~group * (mV+mvsq) + (1 | subslice), data=mc.diff.long_filtered2, na.action=na.exclude)
+summary(mc.dif.mm.int)
+
+
+mc.dif.mm.main <- lmer(pA~group + mV + mvsq + (1 | subslice), data=mc.diff.long_filtered2, na.action=na.exclude)
+summary(mc.dif.mm.main)
+
+# it sure seems like there is no M-Current difference. 
+
+
