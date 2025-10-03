@@ -261,6 +261,20 @@ summary(mc.dif.mm.int)
 mc.dif.mm.main <- lmer(pA~group + mV + mvsq + (1 | subslice), data=mc.diff.long_filtered2, na.action=na.exclude)
 summary(mc.dif.mm.main)
 
-# it sure seems like there is no M-Current difference. 
+## Check for linearity and homoscedasticity
+#plot(mc.dif.mm.main, type = c("p", "smooth"))
 
+## Check for normality of residuals
+#qqnorm(resid(mc.dif.mm.main))
+#qqline(resid(mc.dif.mm.main))
+##theyre *fine*
 
+###### it sure seems like there is no M-Current difference. hmmm. correlation time. extract -30mV M-current pA and attach to rie
+
+# rie2 <- mc.diff.long_filtered %>% 
+#   filter(mV == -30) %>% 
+#   rename(max_MC_pA = pA) %>% 
+#   select(1,2,4) %>% 
+#   left_join(rie,.)
+# 
+# write.csv(rie2, "rawdata/rie_and_maxMC.csv")
