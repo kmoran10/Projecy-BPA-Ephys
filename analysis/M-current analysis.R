@@ -1,6 +1,3 @@
-#### TO DO ON LAPTOP
-# install.packages("Matrix", type = "source")
-# install.packages("lme4", type = "source")
 
 
 # M-current
