@@ -3,7 +3,7 @@
     "path": "C:/R_Projects/Projecy-BPA-Ephys/analysis/M-current analysis.R",
     "project_path": "analysis/M-current analysis.R",
     "type": "r_source",
-    "hash": "2082396910",
+    "hash": "3522417981",
     "contents": "",
     "dirty": false,
     "created": 1751991339917.0,
@@ -12,15 +12,15 @@
     "properties": {
         "source_window_id": "",
         "Source": "Source",
-        "cursorPosition": "253,25",
-        "scrollLine": "245"
+        "cursorPosition": "272,0",
+        "scrollLine": "252"
     },
     "folds": "",
-    "lastKnownWriteTime": 1772568289,
+    "lastKnownWriteTime": 1781711884,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1772568289611,
+    "last_content_update": 1781711884022,
     "read_only": false,
     "read_only_alternatives": []
 }

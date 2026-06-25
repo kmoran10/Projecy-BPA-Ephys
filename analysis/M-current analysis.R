@@ -9,7 +9,6 @@ library(tidyverse)
 library(ggpubr)
 library(car)
 
-source("functions/geom_boxjitter.R")
 
 rie <- read.csv("rawdata/rmp-impre-epsc-data.csv")
 rie$subslice <- paste(rie$subject, rie$slice, sep = "")
@@ -245,6 +244,19 @@ ggline(mc.diff.long_filtered, x = "mV", y = "pA", add = "mean_se", group="group"
 #700x400
 
 
+mc.diff.long_filtered %>%
+  ggplot(aes(x = mV, y = pA, linetype = group, color = group)) +
+  # Line connecting means
+  stat_summary(geom = "line", fun = mean, size = 1) +
+  # Points at means
+  stat_summary(geom = "point", fun = mean, size = 2) +
+  # Error bars (mean ± SEM)
+  stat_summary(geom = "errorbar", fun.data = mean_se, width = 0.2) +
+  geom_hline(yintercept = 0, linetype = "solid", color = "black", size = 0.5) +
+  labs(title = "Outward Current (TTX-XE)", y = "pA (+/- SEM)") +
+  theme_classic()+
+  theme(plot.title = element_text(size = 20)) 
+
 ### actual analysis 
 mc.diff.long_filtered2 <- mc.diff.long_filtered
 
@@ -269,7 +281,7 @@ summary(mc.dif.mm.main)
 ###### it sure seems like there is no M-Current difference. hmmm. correlation time. extract -30mV M-current pA and attach to rie
 
 # rie2 <- mc.diff.long_filtered %>% 
-#   filter(mV == -30) %>% 
+#   filter(mV == -35) %>% 
 #   rename(max_MC_pA = pA) %>% 
 #   select(1,2,4) %>% 
 #   left_join(rie,.)

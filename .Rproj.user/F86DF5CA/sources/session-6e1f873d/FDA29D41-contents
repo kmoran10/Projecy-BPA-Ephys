@@ -4,8 +4,6 @@
 library(tidyverse)
 library(ggpubr)
 
-source("functions/geom_boxjitter.R")
-
 
 rie <- read.csv("rawdata/rmp-impre-epsc-data.csv")
 rie$subslice <- paste(rie$subject, rie$slice, sep = "")
@@ -21,12 +19,10 @@ rmp.tp <- rie %>%
 rmp.tp %>%
   ggplot(aes(RMP.timepoint,RMP, fill = group))+
   stat_compare_means(method = "t.test", size = 6, label.x = 1.5) +
-  geom_boxjitter(outlier.color = NA, jitter.shape = 21, 
-                 alpha = 1,
-                 width = 0.5,
-                 jitter.height = 0.02, jitter.width = 0.02, errorbar.draw = TRUE,
-                 position = position_dodge(0.8)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(position = position_jitterdodge(jitter.width = 0.2, dodge.width = 0.75), size = 1.5) +
   scale_fill_manual(values=c("hotpink", "skyblue")) +
+#  scale_color_manual(values=c("darkgray", "black"))+
   labs(title="Resting Membrane Potential",x="Group", y = "RMP (mV)") +
   theme_classic() +
   theme(axis.line = element_line(colour = 'black', size = 1),
@@ -41,12 +37,10 @@ rmp.tp %>%
   filter(RMP < -40)%>%
   ggplot(aes(RMP.timepoint,RMP, fill = group))+
   stat_compare_means(method = "t.test", size = 6, label.x = 1.5) +
-  geom_boxjitter(outlier.color = NA, jitter.shape = 21, 
-                 alpha = 1,
-                 width = 0.5,
-                 jitter.height = 0.02, jitter.width = 0.02, errorbar.draw = TRUE,
-                 position = position_dodge(0.8)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(position = position_jitterdodge(jitter.width = 0.2, dodge.width = 0.75), size = 1.5) +
   scale_fill_manual(values=c("hotpink", "skyblue")) +
+  #  scale_color_manual(values=c("darkgray", "black"))+
   labs(title="Resting Membrane Potential
 (RMP below -40mV only)",x="Group", y = "RMP (mV)") +
   theme_classic() +
@@ -86,12 +80,10 @@ in.re.tp2 <- in.re.tp %>%
 in.re.tp2 %>%
   ggplot(aes(Inp.re.timepoint,Inp.re, fill = group))+
   stat_compare_means(method = "t.test", size = 6, label.x = 1.5) +
-  geom_boxjitter(outlier.color = NA, jitter.shape = 21, 
-                 alpha = 1,
-                 width = 0.5,
-                 jitter.height = 0.02, jitter.width = 0.02, errorbar.draw = TRUE,
-                 position = position_dodge(0.8)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(position = position_jitterdodge(jitter.width = 0.2, dodge.width = 0.75), size = 1.5) +
   scale_fill_manual(values=c("hotpink", "skyblue")) +
+  #  scale_color_manual(values=c("darkgray", "black"))+
   labs(title="Input Resistance",x="Group", y = "Input Resistance (MΩ)") +
   theme_classic() +
   theme(axis.line = element_line(colour = 'black', size = 1),
@@ -112,12 +104,10 @@ rie %>%
   filter(RMP.pre < -40) %>% 
   ggplot(aes(group,epsc.events, fill = group))+
   stat_compare_means(method = "t.test", size = 6, label.x = 1.5) +
-  geom_boxjitter(outlier.color = NA, jitter.shape = 21, 
-                 alpha = 1,
-                 width = 0.5,
-                 jitter.height = 0.02, jitter.width = 0.02, errorbar.draw = TRUE,
-                 position = position_dodge(0.8)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(position = position_jitterdodge(jitter.width = 0.2, dodge.width = 0.75), size = 1.5) +
   scale_fill_manual(values=c("hotpink", "skyblue")) +
+  #  scale_color_manual(values=c("darkgray", "black"))+
   labs(title="EPSC Events",x="Group", y = "Number of Events") +
   theme_classic() +
   theme(axis.line = element_line(colour = 'black', size = 1),
@@ -133,12 +123,10 @@ rie %>%
   filter(RMP.pre < -40) %>% 
   ggplot(aes(group,epsc.amp, fill = group))+
   stat_compare_means(method = "t.test", size = 6, label.x = 1.5) +
-  geom_boxjitter(outlier.color = NA, jitter.shape = 21, 
-                 alpha = 1,
-                 width = 0.5,
-                 jitter.height = 0.02, jitter.width = 0.02, errorbar.draw = TRUE,
-                 position = position_dodge(0.8)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(position = position_jitterdodge(jitter.width = 0.2, dodge.width = 0.75), size = 1.5) +
   scale_fill_manual(values=c("hotpink", "skyblue")) +
+  #  scale_color_manual(values=c("darkgray", "black"))+
   labs(title="EPSC Amplitude",x="Group", y = "Current (pA)") +
   theme_classic() +
   theme(axis.line = element_line(colour = 'black', size = 1),
@@ -154,12 +142,10 @@ rie %>%
   filter(RMP.pre < -40) %>% 
   ggplot(aes(group,epsc.auc.pAms, fill = group))+
   stat_compare_means(method = "t.test", size = 6, label.x = 1.5) +
-  geom_boxjitter(outlier.color = NA, jitter.shape = 21, 
-                 alpha = 1,
-                 width = 0.5,
-                 jitter.height = 0.02, jitter.width = 0.02, errorbar.draw = TRUE,
-                 position = position_dodge(0.8)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(position = position_jitterdodge(jitter.width = 0.2, dodge.width = 0.75), size = 1.5) +
   scale_fill_manual(values=c("hotpink", "skyblue")) +
+  #  scale_color_manual(values=c("darkgray", "black"))+
   labs(title="EPSC AUC",x="Group", y = "AUC (pA-ms)") +
   theme_classic() +
   theme(axis.line = element_line(colour = 'black', size = 1),
@@ -180,12 +166,10 @@ rie %>%
   filter(RMP.ttx < -40) %>% 
   ggplot(aes(group,mepsc.events, fill = group))+
   stat_compare_means(method = "t.test", size = 6, label.x = 1.5) +
-  geom_boxjitter(outlier.color = NA, jitter.shape = 21, 
-                 alpha = 1,
-                 width = 0.5,
-                 jitter.height = 0.02, jitter.width = 0.02, errorbar.draw = TRUE,
-                 position = position_dodge(0.8)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(position = position_jitterdodge(jitter.width = 0.2, dodge.width = 0.75), size = 1.5) +
   scale_fill_manual(values=c("hotpink", "skyblue")) +
+  #  scale_color_manual(values=c("darkgray", "black"))+
   labs(title="mEPSC Events",x="Group", y = "Number of Events") +
   theme_classic() +
   theme(axis.line = element_line(colour = 'black', size = 1),
@@ -201,12 +185,10 @@ rie %>%
   filter(RMP.ttx < -40) %>% 
   ggplot(aes(group,mepsc.amp, fill = group))+
   stat_compare_means(method = "t.test", size = 6, label.x = 1.5) +
-  geom_boxjitter(outlier.color = NA, jitter.shape = 21, 
-                 alpha = 1,
-                 width = 0.5,
-                 jitter.height = 0.02, jitter.width = 0.02, errorbar.draw = TRUE,
-                 position = position_dodge(0.8)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(position = position_jitterdodge(jitter.width = 0.2, dodge.width = 0.75), size = 1.5) +
   scale_fill_manual(values=c("hotpink", "skyblue")) +
+  #  scale_color_manual(values=c("darkgray", "black"))+
   labs(title="mEPSC Amplitude",x="Group", y = "Current (pA)") +
   theme_classic() +
   theme(axis.line = element_line(colour = 'black', size = 1),
@@ -222,12 +204,10 @@ rie %>%
   filter(RMP.ttx < -40) %>% 
   ggplot(aes(group,mepsc.auc.pAms, fill = group))+
   stat_compare_means(method = "t.test", size = 6, label.x = 1.5) +
-  geom_boxjitter(outlier.color = NA, jitter.shape = 21, 
-                 alpha = 1,
-                 width = 0.5,
-                 jitter.height = 0.02, jitter.width = 0.02, errorbar.draw = TRUE,
-                 position = position_dodge(0.8)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(position = position_jitterdodge(jitter.width = 0.2, dodge.width = 0.75), size = 1.5) +
   scale_fill_manual(values=c("hotpink", "skyblue")) +
+  #  scale_color_manual(values=c("darkgray", "black"))+
   labs(title="mEPSC AUC",x="Group", y = "AUC (pA-ms)") +
   theme_classic() +
   theme(axis.line = element_line(colour = 'black', size = 1),
